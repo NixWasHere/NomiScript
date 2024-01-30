@@ -19,6 +19,7 @@ import {
 } from "./ast.ts";
 import { Token, tokenize, TokenType } from "./lexer.ts";
 import { ParserError, handleError } from "../runtime/handler.ts";
+import { eval_var_declaration } from "../runtime/eval/statements.ts";
 
 export default class Parser {
 	private tokens: Token[] = [];
@@ -312,7 +313,7 @@ export default class Parser {
 	private parse_object_expr(): Expr {
 		// { Prop[] }
 		if (this.at().type !== TokenType.OpenBrace) {
-			return this.parse_additive_expr();
+			return this.parse_comparison_expr();
 		}
 
 		this.eat(); // Advance past open brace.
@@ -353,6 +354,27 @@ export default class Parser {
 
 		this.expect(TokenType.CloseBrace, "Object literal missing '}'.");
 		return { kind: "ObjectLiteral", properties } as ObjectLiteral;
+	}
+
+	private parse_comparison_expr(): Expr {
+		let left = this.parse_additive_expr();
+		console.log(this.at().value);
+
+		while (
+			this.at().value == "<" || 
+			this.at().value == ">"
+			) {
+			const operator = this.eat().value;
+			const right = this.parse_additive_expr();
+			left = {
+				kind: "BinaryExpr",
+				left,
+				right,
+				operator
+			} as BinaryExpr;
+		}
+
+		return left;
 	}
 
 	// Handle Addition & Subtraction Operations
