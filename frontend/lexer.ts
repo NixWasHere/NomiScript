@@ -85,6 +85,8 @@ export function tokenize(sourceCode: string): Token[] {
 	const tokens = new Array<Token>();
     const src = sourceCode.split("");
 
+	console.log(src);
+
 	// produce tokens until the EOF is reached.
 	while (src.length > 0) {
 		// BEGIN PARSING ONE CHARACTER TOKENS
@@ -109,8 +111,22 @@ export function tokenize(sourceCode: string): Token[] {
 			src[0] == "/" ||
 			src[0] == "%"
 		) {
+			console.log(src.shift());
 			tokens.push(token(src.shift(), TokenType.BinaryOperator));
-		} // Handle Conditional & Assignment Tokens
+		} else if (src[0] == "<") {
+			if (src[1] == "=") {
+				tokens.push(token("<=", TokenType.BinaryOperator)); // Doesn't work
+			} else {
+				tokens.push(token(src.shift(), TokenType.BinaryOperator));
+			}
+		} else if (src[0] == ">") {
+			if (src[1] == "=") {
+				tokens.push(token(">=", TokenType.BinaryOperator)); // Doesn't work
+			} else {
+				tokens.push(token(src.shift(), TokenType.BinaryOperator));
+			}
+		} 
+		// Handle Conditional & Assignment Tokens
 		else if (src[0] == "=") {
 			tokens.push(token(src.shift(), TokenType.Equals));
 		} else if (src[0] == ";") {
@@ -153,7 +169,6 @@ export function tokenize(sourceCode: string): Token[] {
 				while (src.length > 0 && isalpha(src[0])) {
 					ident += src.shift();
 				}
-
 				// CHECK FOR RESERVED KEYWORDS
 				const reserved = KEYWORDS[ident];
 				// If value is not undefined then the identifier is
